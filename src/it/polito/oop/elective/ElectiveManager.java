@@ -83,7 +83,18 @@ public class ElectiveManager {
      * @throws ElectiveException : if the number of selected course is not in [1,3] or the id has not been defined.
      */
     public int requestEnroll(String id, List<String> courses)  throws ElectiveException {
-        return -1;
+        if(courses.size()<1 || courses.size()>3 ) throw new ElectiveException();
+        if(!students.containsKey(id)) throw new ElectiveException();
+        for(String c : courses) if(!this.courses.containsKey(c)) throw new ElectiveException();
+
+        int i=0;
+        for(String c : courses){
+            students.get(id).addFreeCourses(c);
+            this.courses.get(c).addPreference(i);
+            i++;
+        }
+        
+        return students.get(id).getFreeCourses().size();
     }
     
     /**
@@ -100,7 +111,7 @@ public class ElectiveManager {
      * @return the map of list of number of requests per course
      */
     public Map<String,List<Long>> numberRequests(){
-        return null;
+        return courses.values().stream().collect(Collectors.toMap(Course::getName, Course::getListPreferences));
     }
     
     
