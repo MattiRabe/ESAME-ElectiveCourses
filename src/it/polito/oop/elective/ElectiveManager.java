@@ -2,11 +2,13 @@ package it.polito.oop.elective;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import java.util.Comparator;
 
 /**
  * Manages elective courses enrollment.
@@ -17,6 +19,7 @@ public class ElectiveManager {
 
     TreeMap<String, Course> courses = new TreeMap<>();
     TreeMap<String, Student> students = new TreeMap<>();
+    LinkedList<Student> notAssignedList = new LinkedList<>();
 
     /**
      * Define a new course offer.
@@ -125,7 +128,27 @@ public class ElectiveManager {
      * @return the number of students that could not be assigned to one of the selected courses.
      */
     public long makeClasses() {
-        return -1;
+        //studenti in ordine di media decrescente
+        LinkedList<Student> s =students.values().stream().sorted(Comparator.comparing(Student::getAverage).reversed()).collect(Collectors.toCollection(LinkedList::new));
+        LinkedList<Student> notAssigned = new LinkedList<>();
+        Student st;
+        while(!s.isEmpty()){
+            st = s.getFirst();
+            Boolean assigned = false;
+            for(String c : st.getFreeCourses()){
+                if(courses.get(c).getStudents().size()<courses.get(c).getPositions()){
+                    courses.get(c).addStudent(st);
+                    st.setCourseAssigned(courses.get(c));
+                    assigned = true;
+                }
+            }
+            if(!assigned){
+                notAssigned.add(st);
+                st.setCourseAssigned(null);
+            }
+        }
+        this.notAssignedList=notAssigned;
+        return notAssigned.size();
     }
     
     
@@ -135,7 +158,7 @@ public class ElectiveManager {
      * @return the map course name vs. student id list.
      */
     public Map<String,List<String>> getAssignments(){
-        return null;
+        return courses.values().stream().collect(Collectors.toMap(Course::getName, Course::getListStudent));
     }
     
     
@@ -157,7 +180,13 @@ public class ElectiveManager {
      * @return the success rate (number between 0.0 and 1.0)
      */
     public double successRate(int choice){
-        return -1;
+        double satisfied=0.0;
+
+        for(Student s : students.values()){
+            if(s.isSatisfied(choice)) satisfied++;
+        }
+
+        return satisfied/students.size();
     }
 
     
@@ -167,8 +196,7 @@ public class ElectiveManager {
      * @return the student id list.
      */
     public List<String> getNotAssigned(){
-        return null;
+        return notAssignedList.stream().map(Student::getId).collect(Collectors.toList());
     }
-    
-    
+
 }
