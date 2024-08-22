@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
  * Manages elective courses enrollment.
@@ -11,6 +14,9 @@ import java.util.SortedSet;
  *
  */
 public class ElectiveManager {
+
+    TreeMap<String, Course> courses = new TreeMap<>();
+    TreeMap<String, Student> students = new TreeMap<>();
 
     /**
      * Define a new course offer.
@@ -20,7 +26,7 @@ public class ElectiveManager {
      * @param availablePositions : the number of available positions
      */
     public void addCourse(String name, int availablePositions) {
-        
+        courses.put(name, new Course(name, availablePositions));
     }
     
     /**
@@ -28,7 +34,7 @@ public class ElectiveManager {
      * @return
      */
     public SortedSet<String> getCourses(){
-        return null;
+        return courses.keySet().stream().collect(Collectors.toCollection(TreeSet::new));
     }
     
     /**
@@ -37,9 +43,8 @@ public class ElectiveManager {
      * @param id : the id of the student
      * @param gradeAverage : the grade average
      */
-    public void loadStudent(String id, 
-                                  double gradeAverage){
-        
+    public void loadStudent(String id, double gradeAverage){
+        students.put(id, new Student(id, gradeAverage));
     }
 
     /**
@@ -48,7 +53,7 @@ public class ElectiveManager {
      * @return : list of students ids.
      */
     public Collection<String> getStudents(){
-        return null;
+        return students.keySet().stream().collect(Collectors.toList());
     }
     
     /**
@@ -59,7 +64,8 @@ public class ElectiveManager {
      * @return : list of students ids.
      */
     public Collection<String> getStudents(double inf, double sup){
-        return null;
+        return students.values().stream().filter(s->s.getAverage()>= inf && s.getAverage()<=sup)
+        .map(Student::getId).collect(Collectors.toList());
     }
 
 
